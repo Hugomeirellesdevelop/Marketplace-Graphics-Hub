@@ -13,8 +13,7 @@ import { eq, sql } from "drizzle-orm";
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>; // Keep for legacy/compatibility if needed, or remove. Auth uses getUser(id)
-  upsertUser(user: UpsertUser): Promise<User>; // Replit Auth uses this
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Orders
   getOrders(): Promise<Order[]>;
@@ -42,15 +41,6 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  // Not used by Replit Auth but kept for interface consistency if needed
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    // We don't have a username field anymore in the standard Replit Auth schema (it uses email/firstName/lastName)
-    // But let's check if 'username' exists in schema. It doesn't.
-    // So we'll return undefined or remove this method.
-    // I'll implementation-stub it.
-    return undefined;
-  }
-
   async upsertUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
@@ -65,11 +55,6 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return user;
   }
-
-  // Legacy createUser for interface compatibility if IStorage demands it, 
-  // but I changed the interface to upsertUser for Auth.
-  // Actually, I should probably implement createUser if I defined it in interface earlier?
-  // Let's stick to IStorage definition above.
 
   async getOrders(): Promise<Order[]> {
     return await db.select().from(orders).orderBy(sql`${orders.createdAt} DESC`);
@@ -129,7 +114,7 @@ export class DatabaseStorage implements IStorage {
         (SELECT COUNT(*)::int FROM production_queue WHERE status = 'delayed') as "delayedJobs"
     `);
     // @ts-ignore
-    return stats.rows[0] as DashboardStats; // Fix: stats.rows[0] for pg result
+    return stats.rows[0] as DashboardStats;
   }
 }
 

@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
@@ -11,6 +11,7 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Setup Auth first
   setupAuth(app);
+  registerAuthRoutes(app);
 
   // Dashboard Stats
   app.get(api.dashboard.stats.path, async (req, res) => {

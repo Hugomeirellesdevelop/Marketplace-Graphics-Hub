@@ -1,25 +1,12 @@
-import { pgTable, text, serial, integer, boolean, timestamp, date, jsonb, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { sql } from "drizzle-orm";
 
-// === AUTH TABLES (Mandatory for Replit Auth) ===
-export const sessions = pgTable("sessions", {
-  sid: varchar("sid").primaryKey(),
-  sess: jsonb("sess").notNull(),
-  expire: timestamp("expire").notNull(),
-});
+// Export Auth Tables from models/auth
+export * from "./models/auth";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  role: text("role").default("client"), // client, factory, admin
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// Import users for foreign keys if needed (though we use integer IDs for other tables, users uses varchar/uuid)
+import { users } from "./models/auth";
 
 // === APP TABLES ===
 
@@ -63,7 +50,7 @@ export const alerts = pgTable("alerts", {
 
 // === SCHEMAS ===
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
+// insertUserSchema is exported from ./models/auth
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
 export const insertProductionSchema = createInsertSchema(productionQueue).omit({ id: true });
 export const insertShipmentSchema = createInsertSchema(shipments).omit({ id: true });
@@ -71,9 +58,7 @@ export const insertAlertSchema = createInsertSchema(alerts).omit({ id: true, cre
 
 // === TYPES ===
 
-export type User = typeof users.$inferSelect;
-export type UpsertUser = typeof users.$inferInsert;
-export type InsertUser = z.infer<typeof insertUserSchema>;
+// User types exported from ./models/auth
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
